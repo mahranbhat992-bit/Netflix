@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXFLIX</title>
+<style>
+  :root{
+    --bg:#141414;
+    --bg-alt:#0b0b0b;
+    --red:#e50914;
+    --text:#f5f5f1;
+    --muted:#9c9c9c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Helvetica Neue', Arial, sans-serif;
+    overflow-x:hidden;
+  }
+  /* NAV */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 4%;
+    transition:background .3s ease;
+  }
+  header.scrolled{background:var(--bg-alt);}
+  .nav-left{display:flex;align-items:center;gap:32px;}
+  .logo{
+    color:var(--red);
+    font-size:28px;font-weight:800;letter-spacing:-1px;
+    font-family:Arial, sans-serif;
+  }
+  .nav-links{display:flex;gap:20px;list-style:none;}
+  .nav-links li{font-size:13.5px;color:var(--text);cursor:pointer;opacity:.85;}
+  .nav-links li.active{font-weight:700;opacity:1;}
+  .nav-links li:hover{opacity:1;}
+  .nav-right{display:flex;align-items:center;gap:18px;}
+  .avatar{
+    width:28px;height:28px;border-radius:4px;
+    background:linear-gradient(135deg,#e50914,#831010);
+  }
+  .icon-btn{cursor:pointer;font-size:16px;opacity:.9;}
+
+  /* HERO */
+  .hero{
+    position:relative;
+    height:82vh;min-height:520px;
+    display:flex;align-items:flex-end;
+    padding:0 4% 8%;
+    background:
+      linear-gradient(180deg, rgba(20,20,20,0) 45%, var(--bg) 100%),
+      linear-gradient(90deg, rgba(20,20,20,.9) 0%, rgba(20,20,20,.15) 65%),
+      url('https://api.dicebear.com/7.x/adventurer/svg?seed=nex-hero&backgroundType=gradientLinear&backgroundColor=7c1e1e,1a1a2e') center/cover no-repeat, #1a1a1a;
+  }
+  .hero-content{max-width:560px;}
+  .hero-badge{
+    font-size:13px;color:#46d369;font-weight:700;margin-bottom:10px;
+  }
+  .hero-title{
+    font-size:56px;font-weight:800;line-height:1.02;margin-bottom:18px;
+    letter-spacing:-1px;
+  }
+  .hero-desc{
+    font-size:16px;line-height:1.5;color:#e8e8e8;margin-bottom:22px;
+    text-shadow:0 1px 3px rgba(0,0,0,.6);
+  }
+  .hero-meta{display:flex;gap:10px;align-items:center;margin-bottom:20px;font-size:13px;color:var(--muted);}
+  .match{color:#46d369;font-weight:700;}
+  .tag{border:1px solid #5a5a5a;padding:1px 6px;border-radius:3px;font-size:11px;}
+  .hero-buttons{display:flex;gap:12px;}
+  .btn{
+    padding:11px 26px;border-radius:4px;border:none;
+    font-size:15.5px;font-weight:700;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    transition:opacity .15s ease;
+  }
+  .btn-play{background:#fff;color:#000;}
+  .btn-play:hover{opacity:.8;}
+  .btn-info{background:rgba(109,109,110,.6);color:#fff;}
+  .btn-info:hover{background:rgba(109,109,110,.85);}
+
+  /* ROWS */
+  .rows{position:relative;z-index:2;margin-top:-8%;padding-bottom:60px;}
+  .row{padding:0 4% 34px;}
+  .row-title{font-size:19px;font-weight:700;margin-bottom:10px;}
+  .row-track{
+    display:flex;gap:6px;overflow-x:auto;padding:10px 0 26px;
+    scrollbar-width:none;
+  }
+  .row-track::-webkit-scrollbar{display:none;}
+  .card{
+    position:relative;
+    flex:0 0 auto;
+    width:220px;height:124px;
+    border-radius:3px;
+    background-size:cover;background-position:center;
+    cursor:pointer;
+    transition:transform .28s ease, box-shadow .28s ease, z-index 0s;
+  }
+  .card:hover{
+    transform:scale(1.35) translateY(-14px);
+    z-index:10;
+    box-shadow:0 18px 40px rgba(0,0,0,.7);
+  }
+  .card-overlay{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg, transparent 40%, rgba(0,0,0,.92) 100%);
+    border-radius:3px;
+    opacity:0;transition:opacity .28s ease;
+    display:flex;flex-direction:column;justify-content:flex-end;padding:10px;
+  }
+  .card:hover .card-overlay{opacity:1;}
+  .card-title{font-size:12.5px;font-weight:700;margin-bottom:4px;}
+  .card-row-icons{display:flex;gap:6px;}
+  .mini-btn{
+    width:22px;height:22px;border-radius:50%;
+    background:rgba(42,42,42,.9);border:1.5px solid #6d6d6d;
+    display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;
+  }
+  .mini-btn.play{background:#fff;color:#000;border:none;}
+
+  /* MODAL */
+  .modal-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.75);
+    display:none;align-items:center;justify-content:center;z-index:200;
+  }
+  .modal-backdrop.open{display:flex;}
+  .modal{
+    background:#181818;width:min(680px,92vw);border-radius:8px;overflow:hidden;
+    max-height:88vh;overflow-y:auto;
+  }
+  .modal-hero{
+    height:280px;position:relative;
+    background-size:cover;background-position:center;
+    display:flex;align-items:flex-end;padding:24px;
+  }
+  .modal-hero::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(24,24,24,0) 40%, #181818 100%);
+  }
+  .modal-hero-inner{position:relative;z-index:1;}
+  .modal-close{
+    position:absolute;top:16px;right:16px;z-index:2;
+    width:34px;height:34px;border-radius:50%;background:#181818;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;
+  }
+  .modal-title{font-size:30px;font-weight:800;margin-bottom:14px;}
+  .modal-body{padding:24px;}
+  .modal-meta{display:flex;gap:12px;color:var(--muted);font-size:13.5px;margin-bottom:14px;}
+  .modal-desc{font-size:14.5px;line-height:1.6;color:#d2d2d2;}
+
+  @media(max-width:640px){
+    .hero-title{font-size:36px;}
+    .hero-desc{font-size:14px;}
+    .nav-links{display:none;}
+    .card{width:150px;height:86px;}
+  }
+</style>
+</head>
+<body>
+
+<header id="header">
+  <div class="nav-left">
+    <div class="logo">NEXFLIX</div>
+    <ul class="nav-links">
+      <li class="active">Home</li>
+      <li>TV Shows</li>
+      <li>Movies</li>
+      <li>New &amp; Popular</li>
+      <li>My List</li>
+    </ul>
+  </div>
+  <div class="nav-right">
+    <span class="icon-btn">🔍</span>
+    <span class="icon-btn">🔔</span>
+    <div class="avatar"></div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">N SERIES</div>
+    <div class="hero-title">Wire &amp; Static</div>
+    <div class="hero-meta">
+      <span class="match">98% Match</span>
+      <span>2026</span>
+      <span class="tag">16+</span>
+      <span>3 Seasons</span>
+      <span class="tag">HD</span>
+    </div>
+    <p class="hero-desc">A signal hijacker uncovers a conspiracy buried in an old broadcast tower, dragging her into a city-wide blackout no one can explain.</p>
+    <div class="hero-buttons">
+      <button class="btn btn-play" onclick="openModal(0)">▶ Play</button>
+      <button class="btn btn-info" onclick="openModal(0)">ⓘ More Info</button>
+    </div>
+  </div>
+</section>
+
+<div class="rows" id="rows"></div>
+
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeModalOnBackdrop(event)">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+// Free cartoon-style illustrations via DiceBear (open-source, MIT-licensed, generated on the fly as SVG —
+// always renders, no broken links). Different styles per row for visual variety.
+const cartoonStyles = ['shapes','bottts','adventurer','fun-emoji','identicon'];
+const posterSeeds = [
+  'nex-a1','nex-a2','nex-a3','nex-a4','nex-a5','nex-a6','nex-a7','nex-a8','nex-a9','nex-a10',
+  'nex-a11','nex-a12','nex-a13','nex-a14','nex-a15','nex-a16','nex-a17','nex-a18','nex-a19','nex-a20'
+];
+function posterUrl(seed, style='shapes'){
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundType=gradientLinear&backgroundColor=b91d47,7c1e1e,1a1a2e,0f2027,3a1c71,134e5e`;
+}
+const palette = posterSeeds.map((s,i) => `url('${posterUrl(s, cartoonStyles[i % cartoonStyles.length])}') center/cover no-repeat, #222`);
+
+const titleBank = [
+  "Wire & Static","Glass Horizon","Last Light District","Nine Shadows",
+  "The Quiet Ward","Ironvale","Static Bloom","Carbon Coast",
+  "Midnight Ferry","Hollow Signal","Pale Harbor","Ash & Neon",
+  "The Long Winter","Redline","Salt City","Echo Chamber",
+  "The Drift","Paper Crown","Low Orbit","Velvet Circuit"
+];
+
+const rowsData = [
+  { title: "Trending Now" },
+  { title: "Because You Watched Wire & Static" },
+  { title: "Critically Acclaimed" },
+  { title: "New Releases" },
+  { title: "Sci-Fi & Fantasy" }
+];
+
+let cardId = 0;
+function makeCards(n){
+  let out = [];
+  for(let i=0;i<n;i++){
+    out.push({
+      id: cardId++,
+      title: titleBank[Math.floor(Math.random()*titleBank.length)],
+      bg: palette[Math.floor(Math.random()*palette.length)],
+      match: 80 + Math.floor(Math.random()*19),
+      year: 2019 + Math.floor(Math.random()*7),
+      seasons: 1 + Math.floor(Math.random()*4),
+      desc: "A gripping story of ambition, betrayal, and the cost of chasing something bigger than yourself, set against a world that keeps shifting under everyone's feet."
+    });
+  }
+  return out;
+}
+
+const allCards = {};
+const rowsEl = document.getElementById('rows');
+rowsData.forEach(row => {
+  const cards = makeCards(12);
+  cards.forEach(c => allCards[c.id] = c);
+  const rowEl = document.createElement('div');
+  rowEl.className = 'row';
+  rowEl.innerHTML = `
+    <div class="row-title">${row.title}</div>
+    <div class="row-track">
+      ${cards.map(c => `
+        <div class="card" style="background:${c.bg}" onclick="openModal(${c.id})">
+          <div class="card-overlay">
+            <div class="card-row-icons">
+              <div class="mini-btn play">▶</div>
+              <div class="mini-btn">+</div>
+              <div class="mini-btn">👍</div>
+            </div>
+            <div class="card-title">${c.title}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  rowsEl.appendChild(rowEl);
+});
+
+function openModal(id){
+  const c = allCards[id] || {
+    title:"Wire & Static", bg:palette[0], match:98, year:2026, seasons:3,
+    desc:"A signal hijacker uncovers a conspiracy buried in an old broadcast tower, dragging her into a city-wide blackout no one can explain."
+  };
+  const modal = document.getElementById('modal');
+  modal.innerHTML = `
+    <div class="modal-hero" style="background:${c.bg}">
+      <div class="modal-close" onclick="closeModal()">✕</div>
+      <div class="modal-hero-inner">
+        <div class="modal-title">${c.title}</div>
+        <div class="hero-buttons">
+          <button class="btn btn-play">▶ Play</button>
+          <button class="btn btn-info" style="padding:11px 14px;">+</button>
+          <button class="btn btn-info" style="padding:11px 14px;">👍</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-meta">
+        <span class="match">${c.match}% Match</span>
+        <span>${c.year}</span>
+        <span class="tag">${c.seasons} Season${c.seasons>1?'s':''}</span>
+        <span class="tag">HD</span>
+      </div>
+      <div class="modal-desc">${c.desc}</div>
+    </div>
+  `;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalBackdrop').classList.remove('open'); }
+function closeModalOnBackdrop(e){ if(e.target.id === 'modalBackdrop') closeModal(); }
+
+window.addEventListener('scroll', () => {
+  const header = document.getElementById('header');
+  if(window.scrollY > 40) header.classList.add('scrolled');
+  else header.classList.remove('scrolled');
+});
+</script>
+
+</body>
+</html>
